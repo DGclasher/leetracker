@@ -1,7 +1,9 @@
 #include <ctime>
+#include <iomanip>
+#include <string.h>
 #include <iostream>
-#include "env_reader.h"
 #include <mysql_driver.h>
+#include "lib/env_reader.h"
 #include <mysql_connection.h>
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
@@ -17,7 +19,40 @@ sql::Connection *eshtablishConnection(std::string hostname, int port, std::strin
     return con;
 }
 
-void insertData(sql::Connection *con, const std::string &leetcodeUrl, const std::string db_name)
+// Function to show all data
+void showAllData(sql::Connection *con)
+{
+    try
+    {
+        sql::PreparedStatement *pstmt;
+        pstmt = con->prepareStatement("SELECT id,leetcodeUrl,sub_date from track_table");
+        sql::ResultSet *resultSet = pstmt->executeQuery();
+
+        int idWidth = 6;
+        int urlWidth = 50;
+        int dateWidth = 16;
+
+        std::cout << std::left << std::setw(idWidth) << "ID"
+                  << std::left << std::setw(urlWidth) << "URL"
+                  << std::left << std::setw(dateWidth) << "Submission Date" << std::endl;
+        std::cout << std::setfill('-') << std::setw(idWidth + urlWidth + dateWidth) << "" << std::setfill(' ') << std::endl;
+        while (resultSet->next())
+        {
+            std::cout << std::left << std::setw(idWidth) << resultSet->getInt("id")
+                      << std::left << std::setw(urlWidth) << resultSet->getString("leetcodeUrl")
+                      << std::left << std::setw(dateWidth) << resultSet->getString("sub_date") << std::endl;
+        }
+        delete pstmt;
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+}
+
+// Function to insert data
+void insertData(sql::Connection *con, const std::string &leetcodeUrl)
 {
     std::time_t t = std::time(0);
     std::tm* now = std::localtime(&t);
@@ -35,12 +70,13 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        std::cout << "Usage: " << argv[0] << " [uri of problem] [env file name (default .env)]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " [options] [extra args]\nUse help for more" << std::endl;
         return 2;
     }
-    std::string env_file_name;
-    env_file_name = argv[2] ? argv[2] : ".env";
-    EnvReader env_reader(env_file_name);
+    EnvReader env_reader(".env");
+    int port = std::stoi(env_reader.GetVariableName("MYSQL_PORT"));
+    std::string mysql_host = env_reader.GetVariableName("MYSQL_HOST");
+    std::string mysql_user = env_reader.GetVariableName("MYSQL_USER");
     std::string db_name = env_reader.GetVariableName("MYSQL_DATABASE");
     std::string db_password = env_reader.GetVariableName("MYSQL_ROOT_PASSWORD");
     if (db_name == "" || db_password == "")
@@ -50,9 +86,35 @@ int main(int argc, char *argv[])
     }
     try
     {
-        sql::Connection *con = eshtablishConnection("localhost", 3307, "root", db_password, db_name);
-        std::string leetcodeUrl = argv[1];
-        insertData(con, leetcodeUrl, db_name);
+        sql::Connection *con = eshtablishConnection(mysql_host, port, mysql_user, db_password, db_name);
+        std::string option = argv[1];
+        if (option == "show")
+        {
+            if (argc < 3)
+            {
+                std::cerr << "Use show help to get more info." << std::endl;
+                return 2;
+            }
+            if (strcmp(argv[2], "help") == 0)
+            {
+                std::cout << "show all : To display all data\nshow [id] : Show by id" << std::endl;
+                return 0;
+            }
+            else if (strcmp(argv[2], "all") == 0)
+            {
+                showAllData(con);
+                return 0;
+            }
+        }
+        else if (option == "add")
+        {
+            if (argc != 3)
+            {
+                std::cerr << "Usage: " << argv[0] << " add [uri of problem]" << std::endl;
+                return 2;
+            }
+            insertData(con, argv[2]);
+        }
     }
     catch (sql::SQLException &e)
     {

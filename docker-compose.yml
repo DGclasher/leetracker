@@ -5,16 +5,10 @@ services:
     env_file:
       - .env
     ports:
-      - "3307:3307"
+      - "3307:3306"
     volumes:
       - mysqlvol:/var/lib/mysql
-      - ./db/entrypoint.sh:/entrypoint.sh
       - ./db/initialize.sql:/docker-entrypoint-initdb.d/init.sql
-    command:
-      - sh
-      - -c
-      - |
-        chmod +x /entrypoint.sh && sh /entrypoint.sh
 
 volumes:
   mysqlvol:
