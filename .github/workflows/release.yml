@@ -9,7 +9,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Setup build environment
-              run: apt install -y build-essential libmysqlcppconn-dev
+              run: sudo apt install -y build-essential libmysqlcppconn-dev
             - name: Build
               run: make all
             - name: Change name
