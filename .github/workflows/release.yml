@@ -1,0 +1,43 @@
+name: Build and Release
+on:
+    push:
+        branches:
+            - main
+jobs:
+    build-and-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup build environment
+              run: apt install -y build-essential libmysqlcppconn-dev
+            - name: Build
+              run: make all
+            - name: Change name
+              run: mv ./leetracker ./leetracker-linux-amd64
+            
+            - name: Create draft release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ github.ref }}
+                  release_name: Release ${{ github.ref }}
+                  draft: true
+                  prerelease: false
+            - name: Upload release asset
+              id: upload-release-asset
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./leetracker-linux-amd64
+                  asset_name: leetracker-linux-amd64
+                  asset_content_type: application/octet-stream     
+            - name: Publish release
+              uses: eregon/publish-release@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                release_id: ${{ steps.create_release.outputs.id }}
