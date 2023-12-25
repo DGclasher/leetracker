@@ -15,29 +15,14 @@ jobs:
             - name: Change name
               run: mv ./leetracker ./leetracker-linux-amd64
             
-            - name: Create draft release
-              id: create_release
-              uses: actions/create-release@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - uses: "marvinpinto/action-automatic-releases@latest"
               with:
-                  tag_name: latest
-                  release_name: Release latest
-                  draft: true
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  automatic_release_tag: "latest"
                   prerelease: false
-            - name: Upload release asset
-              id: upload-release-asset
-              uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  upload_url: ${{ steps.create_release.outputs.upload_url }}
-                  asset_path: ./leetracker-linux-amd64
-                  asset_name: leetracker-linux-amd64
-                  asset_content_type: application/octet-stream     
-            - name: Publish release
-              uses: eregon/publish-release@v1
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                release_id: ${{ steps.create_release.outputs.id }}
+                  files: |
+                      leetracker-linux-amd64
+                  commit_message: "Release v${{ github.run_number }}"
+                  release_title: "Release v${{ github.run_number }}"
+                  release_body: |
+                      Release v${{ github.run_number }}
