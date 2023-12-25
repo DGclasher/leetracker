@@ -1,43 +1,39 @@
-# leetracker
+# LeeTracker
 
 ## Description
 Track your DSA questions throughout.
 
 ## Installation
-+ Create a `.env` file, refer to [this](./.env.example) for creating the `.env`.
-----
+Create a `.env` file, refer to [this](./.env.example) for creating it.
+### Setup database
 #### Using docker
-+ Make sure you have [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/) installed.
-+ Start the container
-  ```
-  sudo docker-compose up -d
-  ```
-#### Using local mysql db
-+ Login to mysql console
-+ Create database `leetcode`
-  ```
-  CREATE DATABASE leetcode;
-  ```
-+ Execute the [initialize.sql](./db/initialize.sql)
-----
-
-+ Install mysqlcpp connector library (On debian and based distros)
+Get the [docker-compose.yml](./docker-compose.yml) and do `docker-compose up -d` to bring up the database.
+#### Using preinstalled db
+Create a database named `leetcode`
+Execute the following
+```
+CREATE TABLE track_table (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	leetcodeUrl VARCHAR(250) NOT NULL,
+	sub_date DATE NOT NULL DEFAULT (CURRENT_DATE));
+```
+### Install mysql cpp connector library
++ For debian and based distros
   ```
   sudo apt install libmysqlcppconn-dev -y
   ```
-+ Or install from source, follow [this](https://dev.mysql.com/doc/connector-cpp/1.1/en/connector-cpp-installation-source-unix.html).
-+ Compile
-  ```
-  make all
-  ```
-
+### Get leetracker
+#### Download prebuild file
+```
+wget https://github.com/DGclasher/leetracker/releases/download/latest/leetracker-linux-amd64
+chmod +x leetracker-linux-amd64
+```
+#### Compile from source
+Clone the repo<br>
+Execute
+```
+make all
+```
 ## Usage
-#### Showing available data
-+ ```
-  ./leetracker show help
-  ```
-
-#### Adding url
-+ ```
-  ./leetracker add [uri of problem]
-  ```
+`show` : Shows help menu<br>
+`add [url]` : Add problem url

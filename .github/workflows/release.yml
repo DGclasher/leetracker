@@ -22,7 +22,4 @@ jobs:
                   prerelease: false
                   files: |
                       leetracker-linux-amd64
-                  commit_message: "Release v${{ github.run_number }}"
-                  release_title: "Release v${{ github.run_number }}"
-                  release_body: |
-                      Release v${{ github.run_number }}
+    
